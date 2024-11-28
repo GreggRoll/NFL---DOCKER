@@ -1,0 +1,22 @@
+2024-11-27 16:41:43,281 [ERROR] - insert_data_to_db
+Traceback (most recent call last):
+  File "/tmp/ipykernel_11309/3297892909.py", line 3, in insert_data_to_db
+    df.to_sql('bovada_data', conn, if_exists='append', index=False)
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/util/_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/core/generic.py", line 3087, in to_sql
+    return sql.to_sql(
+           ^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/io/sql.py", line 842, in to_sql
+    return pandas_sql.to_sql(
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/io/sql.py", line 2851, in to_sql
+    return table.insert(chunksize, method)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/io/sql.py", line 1119, in insert
+    num_inserted = exec_insert(conn, keys, chunk_iter)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codespace/.local/lib/python3.12/site-packages/pandas/io/sql.py", line 2547, in _execute_insert
+    conn.executemany(self.insert_statement(num_rows=1), data_list)
+sqlite3.OperationalError: table bovada_data has no column named datetime
