@@ -1,0 +1,12 @@
+2024-11-29 13:49:28,911 [INFO] - INSERTED NEWS TO espn_news
+2024-11-29 13:49:41,750 [INFO] - RAN check_relevance on 32 rows
+2024-11-29 13:49:41,774 [INFO] - UPDATED relevant in espn_news
+2024-11-29 14:00:00,457 [INFO] - RAN score_article on 18 rows
+2024-11-29 14:00:00,466 [INFO] - UPDATED ai_score in espn_news
+2024-11-29 19:44:47,276 [INFO] - Starting espn_news updates
+2024-11-29 19:44:47,538 [INFO] - INSERTED NEWS TO espn_news
+2024-11-29 19:45:00,955 [INFO] - RAN check_relevance on 32 rows
+2024-11-29 19:45:00,961 [INFO] - UPDATED relevant in espn_news
+2024-11-29 19:45:41,966 [INFO] - RAN score_article on 22 rows
+2024-11-29 19:45:41,973 [INFO] - UPDATED ai_score in espn_news
+2024-11-29 19:45:41,973 [INFO] - Completed espn_news updates

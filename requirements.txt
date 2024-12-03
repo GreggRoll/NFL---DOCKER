@@ -4,3 +4,4 @@ selenium
 bs4
 dash
 dash_bootstrap_components
+python-dotenv
