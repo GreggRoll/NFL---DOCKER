@@ -36,8 +36,8 @@ app.layout = html.Div([
     ),
     dcc.Interval(
         id='data-refresh-component',
-        # interval=12*60*60*1000,  # in milliseconds (12 hrs)
-        interval=1*60*1000,  # in milliseconds (1 minute)
+        interval=24*60*60*1000,  # in milliseconds (24 hrs)
+        # interval=1*60*1000,  # in milliseconds (1 minute)
         n_intervals=0
     ),
     dbc.Accordion([
@@ -67,37 +67,56 @@ app.layout = html.Div([
               Output('team-outlook', 'children')],
               [Input('table-refresh-component', 'n_intervals')])
 def update_table(n):
-"""returns merged, news team rankings and ai news data"""
+    """returns merged, news team rankings and ai news data"""
+
     start, end = get_calls.get_start_end()
     merged_df = get_calls.get_merged_data()
-    team_ratings = get_calls.get_team_ratings(start, end)
-    news_df = get_calls.get_news_data()
+    news_df, team_ratings = get_calls.get_transformed_news_data(start, end)
 
-
-    return [dash_table.DataTable(
-        style_data={
-            'whiteSpace': 'normal',
-            'height': 'auto',
-        },
-        data = merged_df.to_dict('records'), 
-        columns = [{"name": i, "id": i} for i in merged_df.columns]
+    return [
+        dash_table.DataTable(
+            style_data={
+                'whiteSpace': 'normal',
+                'height': 'auto',
+            },
+            data = merged_df.to_dict('records'), 
+            columns = [{"name": i, "id": i} for i in merged_df.columns],
+            style_cell={
+                'textAlign': 'left',
+                'maxWidth': '100px',
+                'overflow': 'hidden',
+                'textOverflow': 'ellipsis',
+            }
         ),
         dash_table.DataTable(
             style_data={
                 'whiteSpace': 'normal',
                 'height': 'auto',
             },
-            data = team_ratings.to_dict('records'), 
-            columns = [{"name": i, "id": i} for i in team_ratings.columns]
-            ),
+            data=news_df.to_dict('records'),
+            columns=[{"name": i, "id": i, "presentation": "markdown"} for i in news_df.columns],
+            style_cell={
+                'textAlign': 'left',
+                'maxWidth': '100px',
+                'overflow': 'hidden',
+                'textOverflow': 'ellipsis',
+            }
+        ),
         dash_table.DataTable(
-                style_data={
-                    'whiteSpace': 'normal',
-                    'height': 'auto',
-                },
-                data = news_df.to_dict('records'), 
-                columns = [{"name": i, "id": i} for i in news_df.columns]
-                )]
+            style_data={
+                'whiteSpace': 'normal',
+                'height': 'auto',
+                'width': 60
+            },
+            data = team_ratings.to_dict('records'), 
+            columns = [{"name": i, "id": i} for i in team_ratings.columns],
+                        style_cell={
+                'textAlign': 'left',
+                'maxWidth': '100px',
+                'overflow': 'hidden',
+                'textOverflow': 'ellipsis',
+            }
+        )]
 
 @app.callback([Input('data-refresh-component', 'n_intervals')])
 def update_data(n):

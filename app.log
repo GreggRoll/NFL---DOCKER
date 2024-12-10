@@ -4792,3 +4792,26 @@ ValueError: invalid literal for int() with base 10: '(-115)'
 2024-12-02 20:48:31,733 [INFO] - STARTING data grab
 2024-12-02 20:48:46,422 [INFO] - Added bovada data to SQL
 2024-12-02 20:49:31,733 [INFO] - STARTING data grab
+2024-12-07 13:32:30,522 [INFO] - Starting espn_news updates
+2024-12-07 13:33:58,394 [INFO] - Starting espn_news updates
+2024-12-07 13:33:58,638 [INFO] - INSERTED NEWS TO espn_news
+2024-12-07 13:34:12,220 [INFO] - RAN check_relevance on 32 rows
+2024-12-07 13:34:12,236 [INFO] - UPDATED relevant in espn_news
+2024-12-07 13:34:50,101 [INFO] - RAN score_article on 18 rows
+2024-12-07 13:34:50,112 [INFO] - UPDATED ai_score in espn_news
+2024-12-07 13:34:50,112 [INFO] - Completed espn_news updates
+2024-12-07 13:48:06,543 [INFO] - STARTING data grab
+2024-12-07 13:49:06,547 [INFO] - STARTING data grab
+2024-12-07 15:59:31,627 [INFO] - STARTING data grab
+2024-12-07 16:00:31,603 [INFO] - STARTING data grab
+2024-12-07 16:01:31,615 [INFO] - STARTING data grab
+2024-12-07 16:03:20,210 [INFO] - STARTING data grab
+2024-12-07 16:03:36,100 [INFO] - Added bovada data to SQL
+2024-12-07 16:03:41,588 [INFO] - Added expert data to SQL
+2024-12-07 16:03:41,601 [INFO] - Added MERGED data to SQL
+2024-12-07 16:03:41,601 [INFO] - COMPLETED data grab
+2024-12-08 16:04:06,335 [INFO] - STARTING data grab
+2024-12-08 16:04:22,824 [INFO] - Added bovada data to SQL
+2024-12-08 16:04:28,268 [INFO] - Added expert data to SQL
+2024-12-08 16:04:28,281 [INFO] - Added MERGED data to SQL
+2024-12-08 16:04:28,281 [INFO] - COMPLETED data grab

@@ -35,7 +35,7 @@ def insert_data_to_db(df, conn, table):
         logger.exception(f"SQL INSERT Error on TABLE: {table}\n{e}")
 
 def insert_bovada_data(current_df):
-    with sqlite3.connect('../data-log.db') as conn:
+    with sqlite3.connect('data-log.db') as conn:
         cursor = conn.cursor()
 
         # Initialize an empty list to collect DataFrames for concatenation
@@ -75,7 +75,7 @@ def insert_bovada_data(current_df):
 
 
 def insert_matchup_data(current_df):
-    with sqlite3.connect('../data-log.db') as conn:
+    with sqlite3.connect('data-log.db') as conn:
         cursor = conn.cursor()
 
         # Initialize an empty list to collect DataFrames for concatenation
@@ -114,7 +114,7 @@ def insert_matchup_data(current_df):
         logger.info("Added matchup data to SQL")
 
 def insert_expert_data(current_df):
-    with sqlite3.connect('../data-log.db') as conn:
+    with sqlite3.connect('data-log.db') as conn:
         cursor = conn.cursor()
 
         # Initialize an empty list to collect DataFrames for concatenation
@@ -152,7 +152,7 @@ def insert_expert_data(current_df):
         logger.info("Added expert data to SQL")
 
 def insert_merge_data(current_df):
-    with sqlite3.connect('../data-log.db') as conn:
+    with sqlite3.connect('data-log.db') as conn:
         cursor = conn.cursor()
 
         # Initialize an empty list to collect DataFrames for concatenation

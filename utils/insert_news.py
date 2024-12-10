@@ -11,7 +11,7 @@ import os
 
 # Set your OpenAI API key
 load_dotenv()
-client = openai.OpenAI(os.getenv('API_KEY'))
+client = openai.OpenAI(api_key=os.getenv('API_KEY'))
 
 def setup_logger(name):
     """Set up a logger for a given module."""
@@ -198,12 +198,15 @@ def score_article(text):
         {"role": "system", "content": "always return json with a list of teams and impacts"},
         {"role": "system", "content": "always reply in the following format: [{'Team': Score}]"},
         {"role": "system", "content": "If data is missing or not relevant return [{'None': Score}]"},
+        {"role": "system", "content": "dictionary values should be the rating score, keys should be in the following list Baltimore Ravens, Buffalo Bills, Chicago Bears, Cincinnati Bengals, Dallas Cowboys, Denver Broncos, Detroit Lions, Green Bay Packers, Houston Texans, Indianapolis Colts, Jacksonville Jaguars, Kansas City Chiefs, Los Angeles Chargers, Miami Dolphins, Minnesota Vikings, New Orleans Saints, New York Giants, New York Jets, Philadelphia Eagles, San Francisco 49ers, Seattle Seahawks, Tampa Bay Buccaneers, Washington Commanders"},
         {"role": "user", "content": f"{text}"}
     ],
      response_format={ "type": "json_object" }
     )
 
     return completion.choices[0].message.content
+
+
 
 def insert_espn_news(start_date, end_date):
     logger.info("Starting espn_news updates")

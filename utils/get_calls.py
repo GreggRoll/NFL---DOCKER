@@ -4,33 +4,54 @@ from datetime import datetime, timedelta
 import json
 
 def get_merged_data():
+    """gets the bovada betting data and espn expert data"""
     with sqlite3.connect('data-log.db') as conn:
-            cursor = conn.cursor()
+        cursor = conn.cursor()
 
-            # Fetch the corresponding game data from the database by game_id
-            cursor.execute("""
-                        SELECT * FROM merged_data 
-                        WHERE IngestTime = (SELECT MAX(IngestTime) FROM merged_data)
-                        """)
+        # Fetch the corresponding game data from the database by game_id
+        cursor.execute("""
+                    SELECT * FROM merged_data 
+                    WHERE IngestTime = (SELECT MAX(IngestTime) FROM merged_data)
+                    """)
     columns = ['game_id', 'Matchup', 'Projected Winner', 'Ranking', 'alt_game_id',
             'Week', 'Game', 'Time', 'pct', 'message', 'IngestTime']
     merged_df = pd.DataFrame(cursor.fetchall(), columns=columns)
     merged_df.drop(columns=['game_id','alt_game_id', 'Game', 'pct'], inplace=True)
     return merged_df
 
-def get_news_data():
+def get_bovada_data(start, end):
+    """gets the bovada betting data and espn expert data"""
     with sqlite3.connect('data-log.db') as conn:
-            cursor = conn.cursor()
+        cursor = conn.cursor()
 
-            # Fetch the corresponding game data from the database by game_id
-            cursor.execute("""
-                        SELECT * FROM espn_news 
-                        """)
-    columns = ['title', 'date', 'link', 'image_url', 'relevant', 'ai_score']
+        # Fetch the corresponding game data from the database by game_id
+        cursor.execute("""
+                    SELECT * FROM bovada_data 
+                    """)
+    columns = ['date', 'time', 'bets', 'home_team', 'away_team',
+            'home_win', 'away_win', 'win_diff', 'day', 'points', 'game_id']
     df = pd.DataFrame(cursor.fetchall(), columns=columns)
+    df['date'] = pd.to_datetime(df['date'])
+    df = df[(df['date']>=start) & (df['date']<=end)]
     return df
 
-def get_team_ratings(start_date, end_date):
+def get_expert_data(start, end):
+    with sqlite3.connect('data-log.db') as conn:
+        cursor = conn.cursor()
+
+        # Fetch the corresponding game data from the database by game_id
+        cursor.execute("""
+                    SELECT * FROM expert_data 
+                    """)
+    columns = ['game', 'time', 'Bell', 'Bowen', 'Clay', 'Fowler', 'Graziano', 'Kahler', 'Martin',
+            'Moody', 'Reid', 'Thiry', 'Wicker' ,'week', 'pct', 'message', 'game_id', 'datetime']
+    df = pd.DataFrame(cursor.fetchall(), columns=columns)
+    df['datetime'] = pd.to_datetime(df['datetime'])
+    df = df[(df['datetime']>=start) & (df['datetime']<=end)]
+    return df
+
+def get_transformed_news_data(start_date, end_date):
+    """Returns the news data and the aggregated team scoring data"""
     # Connect to SQLite database
     with sqlite3.connect('data-log.db') as conn:
         cursor = conn.cursor()
@@ -44,74 +65,71 @@ def get_team_ratings(start_date, end_date):
     data = cursor.fetchall()
 
     columns = ['title', 'date', 'link', 'image_url', 'relevant', 'ai_score']
-    df = pd.DataFrame(data, columns=columns)
+    espn_news_df = pd.DataFrame(data, columns=columns)
 
-    df['date'] = df['date'].apply(lambda x: pd.to_datetime(x))
-    df = df[(df['date']>=start_date) & (df['date']<=end_date)]
+    espn_news_df['date'] = espn_news_df['date'].apply(lambda x: pd.to_datetime(x))
+    espn_news_df = espn_news_df[(espn_news_df['date']>=start_date) & (espn_news_df['date']<=end_date)]
 
-    final_results = []
-
-    df = df[df['ai_score'].notna()]
+    df = espn_news_df[espn_news_df['ai_score'].notna()]
+    df['ai_score'] = df['ai_score'].str.replace('\n', '')
+    items = []
     for ix, row in df.iterrows():
-        ai_score = json.loads(row['ai_score'].strip().replace('\n', ''))
-        df_keys = list(ai_score.keys())
-        #df.at[ix, 'ai_score'] = 
-        if df_keys:
-            if 'result' in ai_score or 'results' in ai_score:
-                for game in ai_score[df_keys[0]]:
-                    final_results.append(game)
+        load = json.loads(row['ai_score'])
+        keys =  list(load.keys())
+        # if key.lower() in ['result', 'results', 'team', 'team_name']:
+        #     return load[key]
+        if len(keys)!=0:
+            if keys[0].lower() in ['result', 'results', 'team', 'team_name']:
+                if len(load[keys[0]]) > 1:
+                    try:
+                        for r in load[keys[0]]:
+                            item = {
+                                "title": row['title'],
+                                "team": list(r.keys())[0],
+                                "ai_rating": list(r.values())[0]
+                            }
+                            items.append(item)
+                    except:
+                        item = {
+                            'title': row['title'],
+                            "team": load[keys[0]],
+                            "ai_rating": load[keys[1]]
+                            }
+                        items.append(item)
+                else:
+                    item = {
+                        "title": row['title'],
+                        "team": list(load[keys[0]].keys())[0],
+                        "ai_rating": load[keys[0]][list(load[keys[0]].keys())[0]]
+                    }
+                    items.append(item)
             else:
-                final_results.append(row['ai_score'])
+                item = {
+                        "title": row['title'],
+                        "team": keys[0],
+                        "ai_rating": load[keys[0]]
+                    }
+                items.append(item)
 
-    def cast_int_or_zero(value):
-        try:
-            return(int(value))
-        except:
-            return None
-        
-    df = pd.DataFrame(final_results)
-    df[0] = df[0].apply(lambda x: x.replace('\n', '').strip() if type(x) == str else x)
-    # Melt the DataFrame to long format
-    df_melted = df.melt(var_name='TEAM')
-    # Drop rows with NaN values in the Score column
-    df_melted['value'] = df_melted['value'].apply(lambda x: cast_int_or_zero(x))
-    df_melted = df_melted.dropna(subset=['value'])
+    df = pd.DataFrame(items)
+    teams = ['Arizona Cardinals','Baltimore Ravens','Buffalo Bills','Chicago Bears','Cincinnati Bengals','Dallas Cowboys','Denver Broncos','Detroit Lions','Green Bay Packers','Houston Texans',
+    'Indianapolis Colts','Jacksonville Jaguars','Kansas City Chiefs','Los Angeles Chargers','Miami Dolphins','Minnesota Vikings','New Orleans Saints','New York Giants','New York Jets',
+    'Philadelphia Eagles','San Francisco 49ers','Seattle Seahawks','Tampa Bay Buccaneers','Washington Commanders']
+    df = df[df['team'].isin(teams)]
 
-    # Group by TEAM and calculate AVG and SUM
-    df_grouped = df_melted.groupby('TEAM')['value'].agg(['mean', 'sum']).reset_index()
-
-    # Rename columns
-    df_grouped.columns = ['TEAM', 'AVG', 'SUM']
-
-    teams = ['Arizona Cardinals',
-    'Baltimore Ravens',
-    'Buffalo Bills',
-    'Chicago Bears',
-    'Cincinnati Bengals',
-    'Dallas Cowboys',
-    'Denver Broncos',
-    'Detroit Lions',
-    'Green Bay Packers',
-    'Houston Texans',
-    'Indianapolis Colts',
-    'Jacksonville Jaguars',
-    'Kansas City Chiefs',
-    'Los Angeles Chargers',
-    'Miami Dolphins',
-    'Minnesota Vikings',
-    'New Orleans Saints',
-    'New York Giants',
-    'New York Jets',
-    'Philadelphia Eagles',
-    'San Francisco 49ers',
-    'Seattle Seahawks',
-    'Tampa Bay Buccaneers',
-    'Washington Commanders',]
-
-    return df_grouped[df_grouped['TEAM'].isin(teams)]
+    merged = pd.merge(df, espn_news_df, on='title', how='left').drop(columns=['date', 'link', 'image_url', 'ai_score', 'relevant'])
+    espn_news_df = pd.merge(espn_news_df, merged, on='title', how='left').drop(columns=['ai_score', 'image_url', 'relevant'])
+    espn_news_df = espn_news_df[['date', 'title', 'team', 'ai_rating', 'link']]
+    espn_news_df.columns = ['Date', 'Article Title', 'Team', 'AI Rating', 'Article Link']
+    espn_news_df.dropna(subset= ['Team'], inplace=True)
+    merged.drop(columns=['title'], inplace=True)
+    team_rating = merged.groupby('team').agg(sum).reset_index()
+    team_rating.columns = ['Team', 'AI News Sentiment Score']
+    return espn_news_df, team_rating
 
 
 def get_start_end():
+    """get start and end for this weeks games"""
     today = datetime.now()
     weekday = today.weekday()  # Monday is 0 and Sunday is 6
 
